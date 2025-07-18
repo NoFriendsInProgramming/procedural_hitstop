@@ -29,10 +29,16 @@ namespace ProceduralHitstop
                 this.hitstopParameters = hitstopParameters;
             }
         }
+
+        enum HitstopType
+        {
+            None,
+            Standard,
+            IK
+        }
         [Header("Testing Variables")]
-        [SerializeField] bool isUsingHitstop = true;
-        [Range(0f, 1f)]
-        [SerializeField] float currentSpeed = 1;
+        [SerializeField] HitstopType hitstopTypeToUse = HitstopType.IK;
+        [SerializeField] int animationIndex = -1;
 
         [Header("Put all the animations you want to try here:")]
         [SerializeField] AnimationWithHitstop[] animationsWithHitstop;
@@ -56,15 +62,42 @@ namespace ProceduralHitstop
 
         private void Update()
         {
-            Time.timeScale = currentSpeed;
+            if(Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                animationIndex = Mathf.Min(animationsWithHitstop.Length - 1, animationIndex + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                animationIndex = Mathf.Max(-1, animationIndex - 1);
+            }
         }
+
 
         void PlayAnimation()
         {
-            int index = Random.Range(0, animationsWithHitstop.Length);
+            int index = animationIndex < 0 ? Random.Range(0, animationsWithHitstop.Length) : animationIndex;
             var info = animationsWithHitstop[index];
             hitstopAnimation.mainAnimancer.Play(info.transition.ClipTransition);
-            if(isUsingHitstop) hitstopAnimation.IncurHitStop(info.hitstopPair.tip, info.hitstopParameters, info.hitstopTime);
+
+            switch(hitstopTypeToUse)
+            {
+                case HitstopType.IK:
+                    hitstopAnimation.IncurHitStop(info.hitstopPair.tip, info.hitstopParameters, info.hitstopTime);
+                    break;
+                case HitstopType.Standard:
+                    StartCoroutine(StandardHitStop(info.hitstopTime, info.hitstopParameters));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        IEnumerator StandardHitStop(float delay, HitStopAnimation.HitstopParameters parameters)
+        {
+            yield return new WaitForSeconds(delay);
+            hitstopAnimation.mainAnimancer.States.Current.Speed = 0;
+            yield return new WaitForSeconds(parameters.hitstopDuration);
+            hitstopAnimation.mainAnimancer.States.Current.Speed = 1;
         }
 
 
