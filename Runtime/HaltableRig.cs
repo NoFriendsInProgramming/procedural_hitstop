@@ -22,7 +22,6 @@ namespace ProceduralHitstop
             var currentState = animancer.Play(other.currentState.Clip);
             currentState.Speed = other.currentState.Speed;
             currentState.NormalizedTime = other.currentState.NormalizedTime;
-
         }
 
         public void MatchOtherHaltableRig(HaltableRig other, float normalizedTime)
@@ -30,12 +29,11 @@ namespace ProceduralHitstop
             var currentState = animancer.Play(other.currentState.Clip);
             currentState.Speed = other.currentState.Speed;
             currentState.NormalizedTime = normalizedTime;
-
         }
+
         public float CurrentAnimationTime() => currentState.Time;
         public void HaltAnimation() => currentState.Speed = 0;
         public void SetCurrentAnimationSpeed(float speed = 1) => currentState.Speed = speed;
-
         public void MoveAnimationTime(float deltaTime) => currentState.Time += deltaTime;
         public void SetAnimationTime(float time) => currentState.Time = time;
 
